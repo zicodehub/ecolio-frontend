@@ -5,7 +5,7 @@ export default {
     // called when the user attempts to log in
     login: ({ username, password }) => {
 
-        let url = 'http://localhost:8000/api/auth/login/'
+        let url = 'https://ecoli-test.herokuapp.com/api/auth/login/'
         // const request = new Request(url, {
         //     method: 'POST',
         //     body: JSON.stringify({ username: 'admin', password: 'admin', code: 'tee' }),
@@ -17,10 +17,10 @@ export default {
         return axios.post(
             url, 
             {
-                username: 'admin', 
-                password: 'admin', 
+                username: username, 
+                password: password, 
                 client: 'admin',
-                code: 'tee' 
+                code: 'gaspar' 
             }
         )
         
@@ -59,6 +59,7 @@ export default {
         if(localStorage.getItem('auth')){
             console.log('YOU ARE AUTH')
         }
+        console.log('YOU NORE ARE AUTH')
         return localStorage.getItem('auth')
             ? Promise.resolve()
             : Promise.reject();
