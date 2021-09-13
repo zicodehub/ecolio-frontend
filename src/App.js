@@ -1,47 +1,13 @@
-// in src/App.js
-import { useState, useEffect } from "react";
+import * as React from "react";
+import { Admin, Resource, ListGuesser } from 'react-admin';
 
-const axios = require('axios')
+import dataProvider from './dataProv' 
 
-let headers = {
-	"Content-Type": "application/json"
-}
-
-        
-        
-
-
-const App = () => {
-	const [ mystate, setMyState ] = useState(0) 
-
-	useEffect(()=>{
-		
-		return axios({
-            url: "https://google.com",
-            method: "get",
-            data: {
-                username: "admin",
-                password : "admin",
-                client: "admin",
-                code: "SUPER_USER_DB"
-            },
-            headers: new Headers({
-                "Content-Type": "application/json"
-            })
-            
-        })
-         .then(response => {
-        	console.log(response)
-    		setMyState("OK")        
-        })
-		.catch(err => {
-			setMyState("ECHEC")
-			console.log(err, 'errr')
-		})
-
-	}, [])
-
-	return (<p> Hello moi {mystate} </p>)
-}
+const App = () => (
+    <Admin dataProvider={dataProvider}>
+        <Resource name="posts"   list={ListGuesser} />
+        <Resource name="users"   list={ListGuesser} />
+    </Admin>
+);
 
 export default App;

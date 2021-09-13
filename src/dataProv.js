@@ -1,196 +1,106 @@
+import { fetchUtils } from 'react-admin';
 import { stringify } from 'query-string';
-import {
-    fetchUtils,
-    GET_LIST,
-    GET_ONE,
-    CREATE,
-    UPDATE,
-    UPDATE_MANY,
-    DELETE,
-    DELETE_MANY,
-    GET_MANY,
-    GET_MANY_REFERENCE,
-} from 'react-admin';
 
 const axios = require("axios")
 
-let heads = {
- "Content-Type": "application/json"
-}
+const apiUrl = 'https://my.api.com/';
+const httpClient = fetchUtils.fetchJson;
 
-        
-        
+const online = "https://ecoli-test.herokuapp.com/api"
+const localhost = "http://localhost:8000/api"
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api',
-  headers: heads
-});
-
-/**
- * Maps react-admin queries to the default format of Django REST Framework
- */
-// const drfProvider = (apiUrl, httpClient=fetchUtils.fetchJson) => {
-const drfProvider = (apiUrl, httpClient=axiosInstance) => {
-
-    /**
-     * @param {String} type React-admin request type, e.g. 'GET_LIST'
-     * @param {String} resource Name of the resource to fetch, e.g. 'posts'
-     * @param {Object} params Request parameters. Depends on the request type
-     * @returns {Object} { url, options } The HTTP request parameters
-     */
-    const convertDataRequestToHttp = (type, resource, params) => {
-        let url = "";
-        let options = {};
-
-        switch(type){
-            case CREATE:
-                url = `${apiUrl}/${resource}/`;
-                options.method = 'POST';
-                options.body = JSON.stringify(params.data);
-                break;
-            case GET_ONE:
-                url = `${apiUrl}/${resource}/${params.id}/`;
-                break;
-            case GET_LIST: {
-                const { page, perPage } = params.pagination;
-                const { field, order } = params.sort;
-                const { filter } = params;
-                const query = {
-                    page,
-                    page_size: perPage,
-                    ordering: `${order === 'ASC' ? '' : '-'}${field}`,
-                    ...filter
-                };
-                console.log('Getting miultiple')
-                url = `${apiUrl}/${resource}/`;
-                break;
-            }
-            case GET_MANY_REFERENCE: {
-                const { page, perPage } = params.pagination;
-                const { field, order } = params.sort;
-                const { filter, target, id } = params;
-                const query = {
-                    page,
-                    page_size: perPage,
-                    ordering: `${order === 'ASC' ? '' : '-'}${field}`,
-                    ...filter,
-                    [target]: id
-                };
-                url = `${apiUrl}/${resource}/?${stringify(query)}`;
-                break;
-            }
-            case UPDATE:
-                url = `${apiUrl}/${resource}/${params.id}/`;
-                options.method = 'PUT';
-                options.body = JSON.stringify(params.data);
-                break;
-            case DELETE:
-                url = `${apiUrl}/${resource}/${params.id}/`;
-                options.method = 'DELETE';
-                break;
-            default:
-                throw new Error(`Unsupported Data Provider request type ${type}`);
-        }
-
-        return { url, options };
+    baseURL: localhost,
+    headers: {
+        "x-code": "pbkdf2_sha256$260000$mxY9TVzOW6qBHvQxlmvluA$lnjw0vdnblPH1txFrlLTctvRPX2w9ENhDKyyeq+sVIk="
     }
+}) 
 
-    /**
-     * @param {Object} response HTTP response from fetch()
-     * @param {String} type React-admin request type, e.g. 'GET_LIST'
-     * @param {String} resource Name of the resource to fetch, e.g. 'posts'
-     * @param {Object} params Request parameters. Depends on the request type
-     * @returns {Object} Data response
-     */
-    const convertHttpResponse = (response, type, resource, params) => {
-        const { headers, json } = response;
+export default {
+    getList: (resource, params) => {
+        // const { page, perPage } = params.pagination;
+        // const { field, order } = params.sort;
+        // const query = {
+        //     sort: JSON.stringify([field, order]),
+        //     range: JSON.stringify([(page - 1) * perPage, page * perPage - 1]),
+        //     filter: JSON.stringify(params.filter),
+        // };
+        // const url = `${apiUrl}/${resource}?${stringify(query)}`;
 
-        switch (type) {
-            case GET_LIST:
-            case GET_MANY_REFERENCE:
-                if ('count' in json){
-                    return { data: json.results, total: json.count }
-                } else if (headers.has('content-range')) {
-                    return {
-                        data: json,
-                        total: parseInt(
-                            headers
-                            .get('content-range')
-                            .split('/')
-                            .pop(),
-                            10
-                        ),
-                    };
-                } else if ('detail' in json && json.detail === 'Invalid page.') {
-                    return { data: [], total: 0 }
-                } else {
-                    throw new Error(
-                        'The total number of results is unknown. The DRF data provider ' +
-                        'expects responses for lists of resources to contain this ' +
-                        'information to build the pagination. If you\'re not using the ' +
-                        'default PageNumberPagination class, please include this ' +
-                        'information using the Content-Range header OR a "count" key ' +
-                        'inside the response.'
-                    );
-                }
-            case CREATE:
-                return { data: { ...params.data, id: json.id } };
-            case DELETE:
-                return { data: params.previousData };
-            default:
-                return { data: json };
-        }
-    }
+        return axiosInstance(`/${resource}/`).then(({ data }) => ({
+            data: data.results,
+            total: data.count,
+        }));
+    },
 
-    /**
-     * @param {String} type React-admin request type, e.g. 'GET_LIST'
-     * @param {string} resource Name of the resource to fetch, e.g. 'posts'
-     * @param {Object} params Request parameters. Depends on the request type
-     * @returns {Promise} the Promise for a data response
-     */
-    return (type, resource, params) => {
-        /**
-         * Split GET_MANY, UPDATE_MANY and DELETE_MANY requests into multiple promises,
-         * since they're not supported by default.
-         */
-        switch (type) {
-            case GET_MANY:
-                return Promise.all(
-                    params.ids.map(id => httpClient.get(`${apiUrl}/${resource}/${id}/`) )
-                ).then(responses => ({
-                    data: responses.map(response => response.json),
-                }));
-            case UPDATE_MANY:
-                return Promise.all(
-                    params.ids.map(id =>
-                        httpClient.put(`${apiUrl}/${resource}/${id}`, JSON.stringify(params.data))
-                    )
-                ).then(responses => ({
-                    data: responses.map(response => response.json),
-                }));
-            case DELETE_MANY:
-                return Promise.all(
-                    params.ids.map(id =>
-                        httpClient(`${apiUrl}/${resource}/${id}`, {
-                            method: 'DELETE',
-                        })
-                    )
-                ).then(responses => ({
-                    data: responses.map(response => response.json),
-                }));
-            default:
-                break;
-        }
+    getOne: (resource, params) =>
+        axiosInstance(`/${resource}/${params.id}/`).then(({ data }) => ({
+            data: data,
+        })),
 
-        const headers =  {
-        	"Authorization": "Token b41c7fbfe9d9a71ac2cd5f991717b5e98700f041d9489b5eedb7cdd2d935d2d4",
-        	"X-Code": "pbkdf2_sha256$260000$SxmU35PfDWwbY4uWfdixMy$oWQlJ4MQLad0Q/w1ZtasrOcfyhZJTEXiEAtmKUlXXpU="
-        }
-        const { url, options } = convertDataRequestToHttp(type, resource, params);
-        console.log(url, options)
-        return axiosInstance(url, ...headers, ...options)
-            .then(response => convertHttpResponse(response, type, resource, params));
-    }
-}
+    getMany: (resource, params) => {
+        const query = {
+            filter: JSON.stringify({ id: params.ids }),
+        };
+        const url = `${apiUrl}/${resource}?${stringify(query)}`;
+        return httpClient(url).then(({ json }) => ({ data: json }));
+    },
 
-export default drfProvider;
+    getManyReference: (resource, params) => {
+        const { page, perPage } = params.pagination;
+        const { field, order } = params.sort;
+        const query = {
+            sort: JSON.stringify([field, order]),
+            range: JSON.stringify([(page - 1) * perPage, page * perPage - 1]),
+            filter: JSON.stringify({
+                ...params.filter,
+                [params.target]: params.id,
+            }),
+        };
+        const url = `${apiUrl}/${resource}?${stringify(query)}`;
+
+        return httpClient(url).then(({ headers, json }) => ({
+            data: json,
+            total: parseInt(headers.get('content-range').split('/').pop(), 10),
+        }));
+    },
+
+    update: (resource, params) =>
+        httpClient(`${apiUrl}/${resource}/${params.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(params.data),
+        }).then(({ json }) => ({ data: json })),
+
+    updateMany: (resource, params) => {
+        const query = {
+            filter: JSON.stringify({ id: params.ids}),
+        };
+        return httpClient(`${apiUrl}/${resource}?${stringify(query)}`, {
+            method: 'PUT',
+            body: JSON.stringify(params.data),
+        }).then(({ json }) => ({ data: json }));
+    },
+
+    create: (resource, params) =>
+        httpClient(`${apiUrl}/${resource}`, {
+            method: 'POST',
+            body: JSON.stringify(params.data),
+        }).then(({ json }) => ({
+            data: { ...params.data, id: json.id },
+        })),
+
+    delete: (resource, params) =>
+        httpClient(`${apiUrl}/${resource}/${params.id}`, {
+            method: 'DELETE',
+        }).then(({ json }) => ({ data: json })),
+
+    deleteMany: (resource, params) => {
+        const query = {
+            filter: JSON.stringify({ id: params.ids}),
+        };
+        return httpClient(`${apiUrl}/${resource}?${stringify(query)}`, {
+            method: 'DELETE',
+            body: JSON.stringify(params.data),
+        }).then(({ json }) => ({ data: json }));
+    },
+};
