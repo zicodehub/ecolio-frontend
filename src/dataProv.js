@@ -6,13 +6,22 @@ const axios = require("axios")
 const apiUrl = 'https://my.api.com/';
 const httpClient = fetchUtils.fetchJson;
 
-const online = "https://ecoli-test.herokuapp.com/api"
-const localhost = "http://localhost:8000/api"
+const online = {
+    url: "https://ecoli-test.herokuapp.com/api",
+    code: "pbkdf2_sha256$260000$6ej1DnO64vQ8SqkudggJQy$aQadVa5Nql/5DNp530ffcyVRxRQL3EB/xm16g3z+8pc="
+}
+const localhost = {
+    url: "http://localhost:8000/api",
+    code: "pbkdf2_sha256$260000$knALxLFKNUw097Lfvas3I6$XwP768M5S+R/3kukxH4hz/opIpBfTJ1ZJ5XYGzsA4yw="
+}
+
+
+const INSTANCE = localhost
 
 const axiosInstance = axios.create({
-    baseURL: localhost,
+    baseURL: INSTANCE.url,
     headers: {
-        "x-code": "pbkdf2_sha256$260000$mxY9TVzOW6qBHvQxlmvluA$lnjw0vdnblPH1txFrlLTctvRPX2w9ENhDKyyeq+sVIk="
+        "x-code": INSTANCE.code
     }
 }) 
 
@@ -27,23 +36,27 @@ export default {
         // };
         // const url = `${apiUrl}/${resource}?${stringify(query)}`;
 
-        return axiosInstance(`/${resource}/`).then(({ data }) => ({
+        return axiosInstance(`/${resource}`).then(({ data }) => ({
             data: data.results,
             total: data.count,
         }));
     },
 
     getOne: (resource, params) =>
-        axiosInstance(`/${resource}/${params.id}/`).then(({ data }) => ({
+        axiosInstance(`/${resource}/${params.id}`).then(({ data }) => ({
             data: data,
         })),
 
     getMany: (resource, params) => {
-        const query = {
-            filter: JSON.stringify({ id: params.ids }),
-        };
-        const url = `${apiUrl}/${resource}?${stringify(query)}`;
-        return httpClient(url).then(({ json }) => ({ data: json }));
+        console.log('Getting MANY', params)
+
+        return new Promise((resolve, reject) => {
+            const allData = []
+            params.ids.map((id)=>{
+                axiosInstance.get(`/${resource}/${id}`).then(({ data }) => allData.push(data) )
+            })
+            resolve({ data: allData });
+        });
     },
 
     getManyReference: (resource, params) => {
@@ -57,50 +70,71 @@ export default {
                 [params.target]: params.id,
             }),
         };
-        const url = `${apiUrl}/${resource}?${stringify(query)}`;
 
-        return httpClient(url).then(({ headers, json }) => ({
-            data: json,
-            total: parseInt(headers.get('content-range').split('/').pop(), 10),
-        }));
+        console.log('Getting MANY REFERENCES', params)
+        return new Promise((resolve, reject) => {
+            const allData = []
+            axiosInstance(`/${resource}`).then(({ data }) => ({
+                data: data
+            }))
+            .then(({ data }) => resolve({ data: data.results, total: data.count }) )
+        
+            
+        });
+
     },
 
     update: (resource, params) =>
-        httpClient(`${apiUrl}/${resource}/${params.id}`, {
-            method: 'PUT',
-            body: JSON.stringify(params.data),
-        }).then(({ json }) => ({ data: json })),
+        axiosInstance({
+            url: `/${resource}/${params.id}`,
+            method: "patch",
+            data: params.data
+        }).then(({ data }) => ({ data: data })),
 
     updateMany: (resource, params) => {
-        const query = {
-            filter: JSON.stringify({ id: params.ids}),
-        };
-        return httpClient(`${apiUrl}/${resource}?${stringify(query)}`, {
-            method: 'PUT',
-            body: JSON.stringify(params.data),
-        }).then(({ json }) => ({ data: json }));
+        return new Promise((resolve, reject) => {
+            const allData = []
+            params.ids.map((id)=>{
+                axiosInstance.patch({
+                    url: `/${resource}/${params.id}`,
+                    data: params.data,
+                })                
+                .then(({ data }) => allData.push(data) )
+            })
+            resolve({ data: allData });
+        });
     },
 
-    create: (resource, params) =>
-        httpClient(`${apiUrl}/${resource}`, {
-            method: 'POST',
-            body: JSON.stringify(params.data),
-        }).then(({ json }) => ({
-            data: { ...params.data, id: json.id },
-        })),
+    create: (resource, params) =>{
+        return axiosInstance({ 
+            method: "post", 
+            url: `/${resource}`, 
+            data: params.data, 
+            headers: { "Content-Type": "application/json" } 
+        })
+            .then(({ data }) => ({
+                    data: { ...params.data, id: data.id },
+            }))
+    },
 
     delete: (resource, params) =>
-        httpClient(`${apiUrl}/${resource}/${params.id}`, {
-            method: 'DELETE',
-        }).then(({ json }) => ({ data: json })),
+        axiosInstance.delete(`/${resource}/${params.id}`).then(({ data }) => ({ data: data })),
 
     deleteMany: (resource, params) => {
-        const query = {
-            filter: JSON.stringify({ id: params.ids}),
-        };
-        return httpClient(`${apiUrl}/${resource}?${stringify(query)}`, {
-            method: 'DELETE',
-            body: JSON.stringify(params.data),
-        }).then(({ json }) => ({ data: json }));
+        return new Promise((resolve, reject) => {
+            params.ids.map((id)=>{
+                axiosInstance.delete(`/${resource}/${id}`)
+            })
+            resolve({ data: params.ids });
+        });
+
+        // const query = {
+        //     filter: JSON.stringify({ id: params.ids}),
+        // };
+        // return axiosInstance({
+        //     url: `/${resource}?${stringify(query)}`,
+        //     method: 'DELETE',
+        //     params: JSON.stringify(params.data),
+        // }).then(({ json }) => ({ data: json }));
     },
 };

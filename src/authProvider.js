@@ -19,9 +19,9 @@ export default {
             {
                 username: username, 
                 password: password, 
-                client: 'admin',
-                code: 'gaspar' 
-            }
+                client: username,
+                code: 'SUPER_USER_DB' 
+            },
         )
         
          .then(response => {
