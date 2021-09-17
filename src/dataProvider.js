@@ -112,8 +112,10 @@ export default {
             data: params.data, 
             headers: { "Content-Type": "application/json" } 
         })
-            .then(({ data }) => ({
+            .then(({ data, status, statusText }) => ({
                     data: { ...params.data, id: data.id },
+                    status: status,
+                    statusText: statusText
             }))
     },
 

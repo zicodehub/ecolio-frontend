@@ -17,6 +17,7 @@ const moveCase = (target) => {
 
 const estLibre = ([x,y], schedule) => {
   for (var i = 0; i < schedule.length; i++) {
+    // console.log(schedule)
     if( schedule[i].x !== x || schedule[i].y !== y ) return false 
   }
   return true
@@ -25,8 +26,11 @@ const estLibre = ([x,y], schedule) => {
 const canMove = (target, enseignants) => {
   let ensTarget = enseignants.find( ens=> ens.nomEnseignant === target.enseignant )
   // console.log(ensTarget)
+  // console.log(target)
   // let ensSource = SOURCE.enseignant
-  if (estLibre( [target.x, target.y], ensTarget.schedule )) return true
+  if(target){
+    if (estLibre( [target.x, target.y], ensTarget.schedule )) return true    
+  }
   return false
   
 }
@@ -44,7 +48,7 @@ function Case({value}) {
   if (isDragging) {
     setSource(value)
     // canMove(value)
-    console.log('Is dragging')
+    // console.log('Is dragging')
 
   }
   return (

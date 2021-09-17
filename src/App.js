@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Admin, Resource, ListGuesser } from 'react-admin';
 
-import dataProvider from './dataProv' 
+import dataProvider from './dataProvider' 
 import authProvider from './authProvider'
 
 import Dashboard from './Dashboard'
@@ -12,7 +12,7 @@ import {ListParente} from './pages/parente'
 import {ListCycle, CreateCycle, EditCycle} from './pages/cycle'
 
 const App = () => (
-    <Admin dataProvider={dataProvider} dashboard={Dashboard}  >
+    <Admin dataProvider={dataProvider} dashboard={Dashboard} authProvider={authProvider} >
         <Resource name="posts"   list={PostList}  />
         <Resource name="user"   list={ListGuesser} />
         <Resource name="group"   list={ListGuesser} />

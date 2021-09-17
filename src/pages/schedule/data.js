@@ -1,7 +1,8 @@
 export default {
 	configs: {
-		x: 1,
-		y: 3
+		x: 6,
+		y: 10,
+		dh: 8
 	},
 	niveaux : [
 		{
