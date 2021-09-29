@@ -1,25 +1,33 @@
 import { fetchUtils } from 'react-admin';
 import dataProvider from './dataProvider'
 
+import axiosInstance, { axiosAuthInstance, refresh } from './axiosInstance'
+
 export default {
     // called when the user attempts to log in
     login: ({ username, password, code }) => {
 
-        return dataProvider.create('auth/login/', {
-            data : {
+        return axiosAuthInstance({
+            url: '/auth/login/', 
+            method: "post",
+            data: {
                 username: username,
                 password: password,
                 client: username,
-                code: 'SUPER_USER_DB'
-            }
-        } )
+                code: code
+            } 
+        })
         
-         .then((data, status, statusText) => {
+         .then(({data, status, statusText}) => {
             if (status < 200 || status >= 300) {
                 throw new Error(statusText);
             }
-            localStorage.setItem('auth', JSON.stringify(data.auth));
-            localStorage.setItem('x-code', JSON.stringify(data["X-Code"]));
+            else {
+                localStorage.setItem('auth', data['token']);
+                localStorage.setItem('x-code', data["X-Code"]);
+                refresh()
+
+            }
             return Promise.resolve()
         })
         .catch(() => {
@@ -34,10 +42,11 @@ export default {
         return Promise.resolve();
     },
     // called when the API returns an error
-    checkError: ({ status }) => {
-        if (status === 401 || status === 403) {
+    checkError: (err) => {
+        if (err.status === 401 || err.status === 403) {
             // localStorage.removeItem('auth');
             // localStorage.removeItem('x-code');
+            console.log(err)
             return Promise.reject();
         }
         console.log("check errors")

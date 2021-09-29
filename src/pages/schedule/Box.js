@@ -1,6 +1,7 @@
 import React from 'react'
 import { useDrop , useDrag } from 'react-dnd'
-import DATA from './data'
+
+let DATA = JSON.parse(localStorage.getItem('SCHEDULE DATA'))
 
 let SOURCE = null
 
@@ -15,57 +16,29 @@ const moveCase = (target) => {
   }
 }
 
-const estLibre = ([x,y], schedule) => {
+const isAvailable = ([x,y], schedule) => {
   for (var i = 0; i < schedule.length; i++) {
     // console.log(schedule)
-    if( schedule[i].x !== x || schedule[i].y !== y ) return false 
+    if( schedule[i].x === x && schedule[i].y === y ) return true 
   }
-  return true
+  return false
 }
 
 const canMove = (target, enseignants) => {
-  let ensTarget = enseignants.find( ens=> ens.nomEnseignant === target.enseignant )
-  // console.log(ensTarget)
-  // console.log(target)
+  let ensTarget = enseignants.find( ens => ens.nomEnseignant === target.enseignant )
+  // console.log(`source : ${ensTarget}`)
+  // console.log(`target : ${target}`)
   // let ensSource = SOURCE.enseignant
-  if(target){
-    if (estLibre( [target.x, target.y], ensTarget.schedule )) return true    
+  if(target  ){
+    // console.log('target foud')
+    if (isAvailable( [target.x, target.y], ensTarget.schedule )){
+       return true
+    }    
   }
   return false
   
 }
 
-// COMPONENT CASE
-function Case({value}) {
-  const [ {isDragging}, drag ] = useDrag(() => ({
-    type: 'box',
-    collect: monitor => ({
-      isDragging: !!monitor.isDragging()
-    }),
-  }))
-
-  // isDragging && setSource(value)
-  if (isDragging) {
-    setSource(value)
-    // canMove(value)
-    // console.log('Is dragging')
-
-  }
-  return (
-    <span
-      ref={drag}
-      style={{
-        opacity: isDragging ? 0.5 : 1,
-        fontSize: 14,
-        fontWeight: 'bold',
-        cursor: 'move',
-    
-      }}
-    >
-      {[value ? value.matiere: null]}
-    </span>
-  )
-}
 
 // COMPONENT BOX
 function Box({ x, y, value, enseignants}) {
@@ -111,3 +84,35 @@ let style = {
 
 export default Box
 
+
+// COMPONENT CASE
+function Case({value, other}) {
+  const [ {isDragging}, drag ] = useDrag(() => ({
+    type: 'box',
+    collect: monitor => ({
+      isDragging: !!monitor.isDragging()
+    }),
+  }))
+
+  // isDragging && setSource(value)
+  if (isDragging) {
+    setSource(value)
+    // canMove(value)
+    // console.log('Is dragging')
+
+  }
+  return (
+    <span
+      ref={drag}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+        fontSize: 14,
+        fontWeight: 'bold',
+        cursor: 'move',
+    
+      }}
+    >
+      {value ? value.matiere: null}  
+    </span>
+  )
+}

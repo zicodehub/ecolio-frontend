@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader } from '@material-ui/core';
 import { Container, Row, Col } from 'react-bootstrap'
 import { DndProvider } from 'react-dnd'
@@ -8,16 +9,30 @@ import Zoomer from './Zoomer'
 import Box from './Box'
 import SimpleBox from './SimpleBox'
 
-import DATA from './data'
+import './data'
 
 
+const axios = require("axios")
 
-const weekLength = DATA.configs.x,
-  hoursLength =  DATA.configs.y
+const localhost = {
+    url: "https://ecolioo.herokuapp.com/api",
+    code: "pbkdf2_sha256$260000$6ej1DnO64vQ8SqkudggJQy$aQadVa5Nql/5DNp530ffcyVRxRQL3EB/xm16g3z+8pc="
+}
 
-const weekArray = Array(weekLength).fill(0),
-		hoursArray = Array(hoursLength).fill(0),
-		style={border: 'black 1px solid',  margin: 1}
+
+const INSTANCE = localhost
+
+const axiosInstance = axios.create({
+    baseURL: INSTANCE.url,
+    headers: {
+        "x-code": INSTANCE.code
+    }
+}) 
+
+
+let DATA = JSON.parse(localStorage.getItem('SCHEDULE DATA'))
+
+
 
 const existIn = (el, liste) => {
   for (var i = 0; i < liste.length; i++) {
@@ -58,12 +73,42 @@ let daysStyle = {
 
 }
 
-export default () => (
-   <DndProvider backend={HTML5Backend}>
-     <Container > 
+export default () => {
+  const [g, refresh] = useState(0)
 
-       <Row > 
-         <Row > 
+
+  const weekLength = DATA.configs.x,
+    hoursLength =  DATA.configs.y
+
+  const weekArray = Array(weekLength).fill(0),
+      hoursArray = Array(hoursLength).fill(0),
+      style={border: 'black 1px solid',  margin: 1}
+  
+
+  useEffect( () => {
+    if(!DATA || 1) {
+      axiosInstance({
+        url: '/schedule?in_json=1',
+        method: "get"
+      })
+        .then(({data}) => {
+          console.log('OKOKOK')
+          localStorage.setItem('SCHEDULE DATA', JSON.stringify(data) ) 
+          console.log('OKOKOK')
+          DATA = JSON.parse(localStorage.getItem('SCHEDULE DATA'))
+          refresh(1)
+        })
+        .catch(err => alert("Erreur pendant la récupération du schedule") )
+    }
+      
+  } , [])
+
+  return (
+   <DndProvider backend={HTML5Backend}>
+     <div style={{  width: '100%', height : '100%' }} > 
+
+       {/*<Row > */}
+{/*         <Row > 
              <Col md="1" style = {{marginRight: 10}} >.</Col >           
              <Col md="1" >
                  <div style = {{display:  'flex'}} > 
@@ -73,16 +118,16 @@ export default () => (
                  </div > 
              </Col >           
          </Row > 
-
-         <Row > 
-             <Col md="1" style = {{marginRight: 20}} >
+*/}
+         <div style={{display: 'flex', flexDirection : 'row', overflow: 'scroll'}} > 
+             <div md="1" style = {{marginRight: 40}} >
                        <SimpleBox height = '335px' > LUNDI </SimpleBox > 
                        <SimpleBox height = '335px' > MARDI </SimpleBox > 
                        <SimpleBox height = '335px' > MERCREDI </SimpleBox > 
-                       <SimpleBox > JEUDI </SimpleBox > 
-                       <SimpleBox > VENDREDI </SimpleBox > 
-             </Col > 
-             <Col md="10" >
+                       <SimpleBox height = '335px' > JEUDI </SimpleBox > 
+                       <SimpleBox height = '335px' > VENDREDI </SimpleBox > 
+             </div > 
+             <div md="10" >
                 {
                   hoursArray.map(
                     (h, hIndex) => (
@@ -101,12 +146,14 @@ export default () => (
 
                 }
 
-              </Col > 
-         </Row > 
-       </Row > 
+              </div > 
+         </div > 
+       {/*</Row > */}
         
 
 
-     </Container>
+     </div>
     </DndProvider>
-);
+
+)
+};

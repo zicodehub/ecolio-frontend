@@ -1,4 +1,10 @@
-import { List, Datagrid, Edit, Create, SimpleForm, DateField, TextField, EditButton, TextInput, DateInput, ReferenceField } from 'react-admin';
+import {
+ List, Edit, Create, Datagrid, SimpleForm, TopToolbar,
+ CreateButton, EditButton, ExportButton, 
+ DateField, TextField, ReferenceField, 
+ TextInput, DateInput,
+ useListContext, useTranslate, useMediaQuery, 
+} from 'react-admin'
 
 export const ListEleve = props => {
 /*    const isSmall = useMediaQuery(theme => theme.breakpoints.down('sm'));
@@ -26,7 +32,6 @@ export const CreateEleve = (props) => (
             <TextInput source="nom" />
             <TextInput source="prenoms" />
             <TextInput source="classe"  />
-            <TextInput source="parent" />
         </SimpleForm>
     </Create>
 );
@@ -43,7 +48,6 @@ export const EditEleve = (props) => (
             <TextInput source="prenoms" />
             <TextInput  source="classe" />
             {/*<DateInput label="Publication date" source="published_at" />*/}
-            <TextInput source="parent" />
             {/*<TextInput disabled label="Nb views" source="views" />*/}
         </SimpleForm>
     </Edit>

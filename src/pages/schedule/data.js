@@ -1,6 +1,6 @@
-export default {
+let DATA = {
 	configs: {
-		x: 6,
+		x: 30,
 		y: 10,
 		dh: 8
 	},
@@ -80,3 +80,6 @@ export default {
 		}
 	]
 }
+
+localStorage.setItem('SCHEDULE DATA', JSON.stringify(DATA) )
+// export default DATA
