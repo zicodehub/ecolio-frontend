@@ -10,7 +10,14 @@ const Menu = ({ onMenuClick, logout }) => {
     const open = useSelector(state => state.admin.ui.sidebarOpen);
     const resources = useSelector(getResources);
     return (
-        <div>
+        <div style = {{ marginTop: 10 }} >
+            <MenuItemLink
+                to=""
+                primaryText="Dashboard"
+                leftIcon={<LabelIcon />}
+                onClick={onMenuClick}
+                sidebarIsOpen={open}
+            />
             {
                 resources.map( (resource, index) => {
                     return (

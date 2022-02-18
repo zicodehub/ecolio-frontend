@@ -17,7 +17,7 @@
     "ra-language-english": "^3.18.2",
     "ra-language-french": "^3.18.2",
     "react": "^17.0.2",
-    "react-admin": "^3.17.2",
+    "react-admin": "^3.18.2",
     "react-bootstrap": "^2.0.0-beta.6",
     "react-dnd": "^14.0.3",
     "react-dnd-html5-backend": "^14.0.1",

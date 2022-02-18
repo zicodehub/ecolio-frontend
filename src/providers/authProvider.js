@@ -1,7 +1,7 @@
 import { fetchUtils } from 'react-admin';
 import dataProvider from './dataProvider'
 
-import axiosInstance, { axiosAuthInstance, refresh } from './axiosInstance'
+import axiosInstance, { axiosAuthInstance, refresh } from '../constants/axiosInstance'
 
 export default {
     // called when the user attempts to log in

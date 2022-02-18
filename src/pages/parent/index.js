@@ -1,4 +1,4 @@
-import { List, useReferenceArrayFieldController, ReferenceArrayField, Datagrid, Edit, Create, SimpleForm, DateField, TextField, EditButton, TextInput, DateInput, ReferenceField } from 'react-admin';
+import { List, useReferenceArrayFieldController, ReferenceArrayField, ReferenceManyField, SingleFieldList, ChipField, Datagrid, Edit, Create, SimpleForm, DateField, TextField, EditButton, TextInput, DateInput, ReferenceField } from 'react-admin';
 
 const ReferenceTextChildren = ({sources}) => {
     // const val = useReferenceArrayFieldController({basePath: "http://localhost:8000/api/eleve"})
@@ -30,9 +30,12 @@ export const ListParent = props => {
                 <TextField source="nom" />
                 <TextField source="prenoms" />
                 <TextField source="enfants" />
-                <ReferenceArrayField source="enfants" reference="eleve">
-                    <ReferenceTextChildren sources="nom,prenoms"  />
-                </ReferenceArrayField>
+                <ReferenceManyField label="Mes enfants" reference="eleve" target="parent"  >
+                    <SingleFieldList>
+                        <ChipField source="nom" />
+                    </SingleFieldList>
+                </ReferenceManyField>
+
                 <EditButton />
             </Datagrid>
         </List>

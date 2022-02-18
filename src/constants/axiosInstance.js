@@ -4,6 +4,11 @@ const online = {
     url: "https://ecolioo.herokuapp.com/api",
     code: localStorage.getItem('x-code')
 }
+const dev = {
+    url: "https://ecolioo-dev.herokuapp.com/api",
+    code: localStorage.getItem('x-code')
+}
+
 const localhost = {
     url: "http://localhost:8000/api",
     code: localStorage.getItem('x-code')

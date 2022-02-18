@@ -1,6 +1,6 @@
 import * as React from "react";
 import {cloneElement} from 'react'
-import { Admin, Resource, ListGuesser } from 'react-admin';
+import { Admin, Resource, ListGuesser, EditGuesser } from 'react-admin';
 import IconEvent from '@material-ui/icons/Event';
 
 import theme from './constants/theme' 
@@ -18,16 +18,20 @@ import LoginPage from './pages/Login';
 import LogoutButton from './components/LogoutButton';
 
 import {ListParent} from './pages/parent'
-import {ListEleve, CreateEleve, EditEleve} from './pages/eleve'
-import { ListNiveau } from './pages/niveau'
+import Eleve from './pages/eleve'
+import Filiere from './pages/filiere'
+import Niveau from './pages/niveau/index'
+import Classe from './pages/classe'
+import Annee from './pages/annee'
+import Group from './pages/group'
 
 const App = () => (
     <Admin 
     	title="My Custom Admin"
     	locale="fr" 
         theme={theme} 
+        layout={Layout}
         customRoutes={customRoutes}
-    	layout={Layout} 
         loginPage={LoginPage} 
     	catchAll={NotFound}
     	i18nProvider={i18nProvider} 
@@ -36,17 +40,19 @@ const App = () => (
     	dashboard={Dashboard} 
     	>
 
-        <Resource name="annee" list={ListGuesser} />
+        <Resource name="annee" {...Annee} />
         <Resource name="cycle" list={ListGuesser} />
-        <Resource name="niveau" list={ListNiveau} />
-        <Resource name="eleve" list={ListEleve} edit={EditEleve} create={CreateEleve} />
-        <Resource name="parent" list={ListParent} />
+        <Resource name="niveau" {...Niveau} />
+        <Resource name="filiere" {...Filiere} />
+        <Resource name="classe" {...Classe} />
+        <Resource name="eleve" {...Eleve} />
+        <Resource name="parent" list={ListParent} edit={EditGuesser} />
         <Resource name="note" list={ListGuesser} />
         <Resource name="typenote" list={ListGuesser} />
+        <Resource name="group" {...Group} />
         <Resource name="user" list={ListGuesser} />
-        <Resource name="group" list={ListGuesser} />
+        <Resource name="permission" list={ListGuesser} />
     </Admin>
 );
-
 
 export default App;

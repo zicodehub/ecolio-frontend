@@ -1,5 +1,4 @@
-import axiosInstance from './axiosInstance'
-import {axiosAuthInstance} from './axiosInstance'
+import axiosInstance, {axiosAuthInstance} from '../constants/axiosInstance'
 import { stringify } from 'query-string';
 
 export default {
@@ -36,30 +35,41 @@ export default {
                 .then( ({ data, count }) => ({ data: data.results , total: count }) ) ;
     },
 
-    // getManyReference: (resource, params) => {
-    //     const { page, perPage } = params.pagination;
-    //     const { field, order } = params.sort;
-    //     const query = {
-    //         sort: JSON.stringify([field, order]),
-    //         range: JSON.stringify([(page - 1) * perPage, page * perPage - 1]),
-    //         filter: JSON.stringify({
-    //             ...params.filter,
-    //             [params.target]: params.id,
-    //         }),
-    //     };
+    getManyReference: (resource, params) => {
+        // const query = {
+        //     sort: JSON.stringify([field, order]),
+        //     range: JSON.stringify([(page - 1) * perPage, page * perPage - 1]),
+        //     filter: JSON.stringify({
+        //         ...params.filter,
+        //         [params.target]: params.id,
+        //     }),
+        // };
+        const { page, perPage } = params.pagination
+        // const pagination = `limit=${perPage}&offset=${(page - 1) * perPage}`
 
-    //     console.log('Getting MANY REFERENCES', params)
-    //     return new Promise((resolve, reject) => {
-    //         const allData = []
-    //         axiosInstance(`/${resource}`).then(({ data }) => ({
-    //             data: data
-    //         }))
-    //         .then(({ data }) => resolve({ data: data.results, total: data.count }) )
+        const { field, order } = params.sort;
+        // const ordering = `ordering=${order === 'DESC' ? '-' : '' }${field}`
+        const target = `${params.target}__in`
+        const query = stringify({
+            limit: perPage,
+            offset: (page - 1) * perPage,
+            ordering: `${order === 'DESC' ? '-' : '' }${field}`,
+            ...params.filter,
+            [target]: params.id
+        })
+
+        console.log('Getting MANY REFERENCES', params)
+        return new Promise((resolve, reject) => {
+            const allData = []
+            axiosInstance(`/${resource}?${query}`).then(({ data }) => ({
+                data: data
+            }))
+            .then(({ data }) => resolve({ data: data.results, total: data.count }) )
         
             
-    //     });
+        });
 
-    // },
+    },
 
     update: (resource, params) =>
         axiosInstance({

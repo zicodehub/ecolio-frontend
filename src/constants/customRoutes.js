@@ -13,6 +13,6 @@ const Foo = () => (
 );
 
 export default [
-    <Route exact path="/annee" component={Foo} />,
+    // <Route exact path="/anne" component={Foo} />,
     // <RouteWithoutLayout exact path="/niveau" component={Foo} />,
 ];
